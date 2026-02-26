@@ -1,0 +1,70 @@
+import pandas as pd
+import os
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import SGDClassifier
+from sklearn.metrics import accuracy_score, classification_report
+
+# 1. Menentukan path file di folder sample_data
+file_path = 'Sample_Data/Dataset Review Product di Shopee dan Tokopedia.csv'
+
+# Pengecekan apakah file benar-benar ada di folder tersebut
+if not os.path.exists(file_path):
+    print(f"Mencari file di: {file_path}")
+    raise FileNotFoundError("File tidak ditemukan! Pastikan Anda sudah memindahkan file CSV ke dalam folder 'sample_data' di Colab.")
+
+# 2. Membaca Data
+df = pd.read_csv(file_path, sep=';', on_bad_lines='skip', encoding='latin1') # Added encoding='latin1'
+
+# 3. Preprocessing & Pembersihan Data
+df.columns = ['review_id', 'review', 'rating_raw']
+df['rating'] = df['rating_raw'].astype(str).str.extract(r'(\d+)').astype(float)
+df = df.dropna(subset=['review', 'rating'])
+
+# Membatasi data menjadi 1000 baris, menggunakan sampling untuk memastikan diversitas kelas
+if len(df) > 1000:
+    df = df.sample(n=1000, random_state=42).reset_index(drop=True)
+else:
+    print("Dataset has less than 1000 rows, using entire dataset.")
+
+# Verifikasi jumlah kelas setelah sampling
+unique_ratings_count = df['rating'].nunique()
+if unique_ratings_count < 2:
+    print(f"\nWarning: After sampling/limiting to 1000 rows, the dataset still has only {unique_ratings_count} unique rating values.")
+    print(f"Unique ratings found: {df['rating'].unique()}")
+    raise ValueError("Classification requires at least two unique classes. Please check your data or sampling strategy.")
+else:
+    print(f"\nSuccessfully sampled 1000 rows with {unique_ratings_count} unique rating classes.")
+    print(f"Unique ratings found: {df['rating'].unique()}")
+
+# 4. Membagi Data (Train & Test)
+X_train, X_test, y_train, y_test = train_test_split(
+    df['review'], df['rating'], test_size=0.2, random_state=42
+)
+
+# 5. Vektorisasi (Mengubah teks menjadi angka)
+tfidf = TfidfVectorizer(max_features=10000, ngram_range=(1,2))
+X_train_tfidf = tfidf.fit_transform(X_train)
+X_test_tfidf = tfidf.transform(X_test)
+
+# 6. Melatih Model (Linear SVM menggunakan SGDClassifier)
+jumlah_epoch = 100
+
+model = SGDClassifier(
+    loss='hinge',         # Loss 'hinge' bekerja sebagai Linear SVM
+    max_iter=jumlah_epoch,
+    tol=1e-3,
+    verbose=1,            # Agar Colab mencetak proses per epoch
+    random_state=42
+)
+
+print(f"Memulai training model selama {jumlah_epoch} epoch...\n")
+model.fit(X_train_tfidf, y_train)
+
+# 7. Evaluasi Model
+y_pred = model.predict(X_test_tfidf)
+
+print("\n" + "="*40)
+print(f"AKURASI MODEL: {accuracy_score(y_test, y_pred):.2f}")
+print("="*40)
+print("\nLaporan Klasifikasi:\n", classification_report(y_test, y_pred))
