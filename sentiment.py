@@ -3,15 +3,15 @@ import numpy as np
 import re
 import string
 import pickle
-import matplotlib.pyplot as plt  # Ditambahkan untuk visualisasi
-import seaborn as sns            # Ditambahkan untuk visualisasi
+import matplotlib.pyplot as plt  
+import seaborn as sns             
 
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.svm import LinearSVC
-from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report, precision_recall_fscore_support
 
 # Load 1000 Data
 print("Loading dataset")
@@ -98,13 +98,52 @@ y_pred = model.predict(X_test_tfidf)
 accuracy = accuracy_score(y_test, y_pred)
 cm = confusion_matrix(y_test, y_pred)
 
+# Visual nilai matrix
+precision, recall, f1, _ = precision_recall_fscore_support(y_test, y_pred, average='weighted')
+
 print("\nHASIL EVALUASi")
 print("Akurasi:", round(accuracy * 100, 2), "%")
 
 print("\nClassification Report:")
 print(classification_report(y_test, y_pred))
 
-# Visualisasi Distribusi Sentimen
+# Visual Matrix evaluasi
+fig_metrics, ax_m = plt.subplots(figsize=(10, 6))
+ax_m.set_axis_off()
+
+metrics_list = [
+    ("Akurasi", f"{accuracy*100:.1f}%"),
+    ("Precision", f"{precision:.2f}"),
+    ("Recall", f"{recall:.2f}"),
+    ("F1-Score", f"{f1:.2f}")
+]
+
+for i, (label, val) in enumerate(metrics_list):
+    row = i // 2 
+    col = i % 2   
+    x_pos = 0.05 + (col * 0.48)
+    y_pos = 0.55 - (row * 0.42)
+    
+    is_first = (i == 0)
+    bg_color = "#4a0e0e" if is_first else "#f8f9fa"
+    t_color = "white" if is_first else "#4a0e0e"
+    
+    rect = plt.Rectangle((x_pos, y_pos), 0.42, 0.35, color=bg_color, ec="#e9ecef", lw=2, transform=ax_m.transAxes)
+    ax_m.add_patch(rect)
+    
+    ax_m.text(x_pos + 0.21, y_pos + 0.2, val, fontsize=24, weight='bold', 
+              ha='center', color=t_color, transform=ax_m.transAxes)
+    
+    ax_m.text(x_pos + 0.21, y_pos + 0.1, label, fontsize=12, 
+              ha='center', color=t_color, transform=ax_m.transAxes)
+    
+ax_m.text(0.05, 0.05, f"Interpretasi: Model berhasil mengklasifikasikan {accuracy*100:.1f}% ulasan dengan benar.", 
+          fontsize=11, color="#4a4a4a", transform=ax_m.transAxes)
+
+plt.title("Matrix Evaluasi", fontsize=16, pad=10, weight='bold', color='#4a0e0e')
+plt.show()
+
+# Visual Distribusi Sentimen
 plt.figure(figsize=(6, 4))
 sns.countplot(x='sentiment', data=df)
 plt.title('Distribusi Sentimen (0 = Negatif, 1 = Positif)')
@@ -112,6 +151,18 @@ plt.xlabel('Sentimen')
 plt.ylabel('Jumlah Data')
 plt.show()
 
+# Visual distribusi sentimen
+dist_pct = df['sentiment'].value_counts(normalize=True) * 100
+labels_map = {1: 'Positif (1)', 0: 'Negatif (0)'}
+plt.figure(figsize=(8, 3))
+colors_h = ['#2ecc71' if idx == 1 else '#e74c3c' for idx in dist_pct.index]
+bars_h = plt.barh([labels_map[idx] for idx in dist_pct.index], dist_pct.values, color=colors_h, height=0.4)
+for bar in bars_h:
+    plt.text(bar.get_width() + 1, bar.get_y() + bar.get_height()/2, f'{bar.get_width():.2f}%', va='center', weight='bold', color='#4a0e0e')
+plt.title("Distribusi Sentimen (Persentase)", loc='left', fontsize=12)
+plt.xlim(0, 110)
+sns.despine(left=True, bottom=True)
+plt.show()
 
 # Visualisasi Confusion Matrix
 plt.figure(figsize=(6, 4))
