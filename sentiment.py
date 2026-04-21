@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns             
 
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
-
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.svm import LinearSVC
@@ -151,7 +150,7 @@ plt.xlabel('Sentimen')
 plt.ylabel('Jumlah Data')
 plt.show()
 
-# Visual distribusi sentimen
+# Visual distribusi sentimen (Presentase)
 dist_pct = df['sentiment'].value_counts(normalize=True) * 100
 labels_map = {1: 'Positif (1)', 0: 'Negatif (0)'}
 plt.figure(figsize=(8, 3))
