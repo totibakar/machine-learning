@@ -111,7 +111,7 @@ fig_metrics, ax_m = plt.subplots(figsize=(10, 6))
 ax_m.set_axis_off()
 
 metrics_list = [
-    ("Akurasi", f"{accuracy*100:.1f}%"),
+    ("Accuracy", f"{accuracy*100:.1f}%"),
     ("Precision", f"{precision:.2f}"),
     ("Recall", f"{recall:.2f}"),
     ("F1-Score", f"{f1:.2f}")
@@ -136,29 +136,29 @@ for i, (label, val) in enumerate(metrics_list):
     ax_m.text(x_pos + 0.21, y_pos + 0.1, label, fontsize=12, 
               ha='center', color=t_color, transform=ax_m.transAxes)
     
-ax_m.text(0.05, 0.05, f"Interpretasi: Model berhasil mengklasifikasikan {accuracy*100:.1f}% ulasan dengan benar.", 
+ax_m.text(0.05, 0.05, f"Interpretation: Model successfully classified {accuracy*100:.1f}% of reviews correctly.", 
           fontsize=11, color="#4a4a4a", transform=ax_m.transAxes)
 
-plt.title("Matrix Evaluasi", fontsize=16, pad=10, weight='bold', color='#4a0e0e')
+plt.title("Matrix Evaluation", fontsize=16, pad=10, weight='bold', color='#4a0e0e')
 plt.show()
 
-# Visual Distribusi Sentimen
+# Visual Sentiment Distribution
 plt.figure(figsize=(6, 4))
 sns.countplot(x='sentiment', data=df)
-plt.title('Distribusi Sentimen (0 = Negatif, 1 = Positif)')
-plt.xlabel('Sentimen')
-plt.ylabel('Jumlah Data')
+plt.title('Sentiment Distribution (0 = Negative, 1 = Positive)')
+plt.xlabel('Sentiment')
+plt.ylabel('Number of Data')
 plt.show()
 
 # Visual distribusi sentimen (Presentase)
 dist_pct = df['sentiment'].value_counts(normalize=True) * 100
-labels_map = {1: 'Positif (1)', 0: 'Negatif (0)'}
+labels_map = {1: 'Positive (1)', 0: 'Negative (0)'}
 plt.figure(figsize=(8, 3))
 colors_h = ['#2ecc71' if idx == 1 else '#e74c3c' for idx in dist_pct.index]
 bars_h = plt.barh([labels_map[idx] for idx in dist_pct.index], dist_pct.values, color=colors_h, height=0.4)
 for bar in bars_h:
     plt.text(bar.get_width() + 1, bar.get_y() + bar.get_height()/2, f'{bar.get_width():.2f}%', va='center', weight='bold', color='#4a0e0e')
-plt.title("Distribusi Sentimen (Persentase)", loc='left', fontsize=12)
+plt.title("Sentiment Distribution (Percentage)", loc='left', fontsize=12)
 plt.xlim(0, 110)
 sns.despine(left=True, bottom=True)
 plt.show()
@@ -166,14 +166,14 @@ plt.show()
 # Visualisasi Confusion Matrix
 plt.figure(figsize=(6, 4))
 sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
-            xticklabels=['Negatif', 'Positif'], 
-            yticklabels=['Negatif', 'Positif'])
+            xticklabels=['Negative', 'Positive'], 
+            yticklabels=['Negative', 'Positive'])
 plt.title('Confusion Matrix')
-plt.xlabel('Prediksi Model')
-plt.ylabel('Data Asli')
+plt.xlabel('Predicted Model')
+plt.ylabel('Original Data')
 plt.show()
 
-# Presentase Akhir
+# Final Percentage
 positif = (df['sentiment'] == 1).sum()
 negatif = (df['sentiment'] == 0).sum()
 total = len(df)
