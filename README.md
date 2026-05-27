@@ -1,4 +1,4 @@
-Machine Learning stuff <br> <br>
+Machine Learning <br> <br>
 
 Installing the lib:<br>
 1. python -m pip install pandas
